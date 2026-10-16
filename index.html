@@ -41,7 +41,18 @@
 <p class="hint">Pengaturan mulut adalah lapisan visual sederhana di atas gambar. Sesuaikan ketiga slider sampai berada di posisi mulut karakter.</p></div>
 </aside>
 </main>
-<div class="footer">AnimeDramaStudio • Prototipe awal • Tidak menggunakan API AI • Proyek disimpan di browser ini</div>
+<section class="panel" style="margin-top:16px">
+<h3>🎧 Cerita dari audio sendiri</h3>
+<p class="hint">Unggah rekaman suara, lalu tempel teks yang diucapkan. Studio akan membagi teks menjadi adegan, menampilkan subtitle, dan menyelaraskannya dengan durasi audio.</p>
+<div class="field"><label for="storyAudioFile">File audio (MP3, WAV, M4A, OGG)</label><input id="storyAudioFile" type="file" accept="audio/*"></div>
+<audio id="storyAudio" controls style="width:100%;margin:4px 0 10px"></audio>
+<div class="field"><label for="storyTranscript">Naskah/transkrip audio</label><textarea id="storyTranscript" placeholder="Tempel kata-kata yang terdengar di audio. Pisahkan adegan dengan titik, tanda tanya, tanda seru, atau baris baru."></textarea></div>
+<div class="actions"><button class="primary" id="buildScenesBtn">✦ Susun alur adegan</button><button id="clearScenesBtn">Hapus adegan</button></div>
+<div id="sceneList" style="display:grid;gap:8px;margin-top:12px"></div>
+<div id="storyStatus" class="status" role="status">Belum ada audio atau adegan.</div>
+<div class="warn">Penting: tanpa AI/API transkripsi, aplikasi tidak bisa mengetahui isi kata-kata dari audio secara otomatis. Tempel transkripnya agar subtitle dan urutan adegan dapat diselaraskan. Untuk saat ini, latar dan karakter dipilih oleh Om; studio belum otomatis membuat gambar baru berdasarkan makna kalimat.</div>
+</section>
+<div class="footer">AnimeDramaStudio • Prototipe awal • Tanpa API AI • Proyek disimpan di browser ini</div>AnimeDramaStudio • Prototipe awal • Tidak menggunakan API AI • Proyek disimpan di browser ini</div>
 </div>
 <script>
 (() => {
@@ -49,7 +60,7 @@ const canvas=document.getElementById('stage'),ctx=canvas.getContext('2d');
 const charInput=document.getElementById('characterFile'),bgInput=document.getElementById('backgroundFile');
 const dialog=document.getElementById('dialog'),motion=document.getElementById('motion'),status=document.getElementById('status');
 const mouthX=document.getElementById('mouthX'),mouthY=document.getElementById('mouthY'),mouthSize=document.getElementById('mouthSize');
-let character=null,background=null,speaking=false,startedAt=0,raf=0,voices=[];
+let character=null,background=null,speaking=false,startedAt=0,raf=0,voices=[],storyScenes=[],storyAudioUrl=null;\nconst storyAudio=document.getElementById('storyAudio'),storyAudioFile=document.getElementById('storyAudioFile'),storyTranscript=document.getElementById('storyTranscript'),sceneList=document.getElementById('sceneList'),storyStatus=document.getElementById('storyStatus');
 const sayStatus=t=>status.textContent=t;
 function loadImage(file,cb){if(!file)return;const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{cb(img);URL.revokeObjectURL(url)};img.onerror=()=>{URL.revokeObjectURL(url);sayStatus('Gambar tidak dapat dibuka. Coba file PNG atau JPG lain.')};img.src=url}
 function drawCover(img,x,y,w,h){const ir=img.width/img.height,cr=w/h;let dw,dh;if(ir>cr){dh=h;dw=h*ir}else{dw=w;dh=w/ir}ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh)}
@@ -70,9 +81,22 @@ function frame(now){
   ctx.textAlign='center';ctx.fillStyle='#e8dfff';ctx.font='bold 32px system-ui';ctx.fillText('Unggah karakter anime',w/2,h*.43);ctx.fillStyle='#b8afce';ctx.font='20px system-ui';ctx.fillText('PNG • JPG • WEBP',w/2,h*.49);
   ctx.font='70px system-ui';ctx.fillText('✦',w/2,h*.62)
  }
+ if(storyAudio && !storyAudio.paused && storyScenes.length){
+  const dur=storyAudio.duration||0;let elapsed=0,current=null;
+  if(dur>0){const total=storyScenes.reduce((s,x)=>s+x.weight,0)||1;const pos=storyAudio.currentTime/dur*total;for(const sc of storyScenes){elapsed+=sc.weight;if(pos<=elapsed){current=sc;break}}}
+  if(current){speaking=true;ctx.save();const boxH=88;ctx.fillStyle='rgba(13,9,23,.83)';ctx.fillRect(36,h-boxH-26,w-72,boxH);ctx.strokeStyle='#f17bb8';ctx.lineWidth=3;ctx.strokeRect(36,h-boxH-26,w-72,boxH);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='bold 26px system-ui';wrapText(current.text,w-110,h-boxH+7,32);ctx.restore()}else speaking=false;
+ } else if(storyAudio && storyAudio.paused){speaking=false}
  raf=requestAnimationFrame(frame)
 }
+function wrapText(text,maxWidth,startY,lineHeight){const words=text.split(/\\s+/);let line='',y=startY;for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,canvas.width/2,y);line=word;y+=lineHeight}else line=test}if(line)ctx.fillText(line,canvas.width/2,y)}
+
 function populateVoices(){if(!('speechSynthesis'in window))return;voices=speechSynthesis.getVoices();const sel=document.getElementById('voice');const old=sel.value;sel.innerHTML='<option value="">Suara bawaan</option>';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});if(old)sel.value=old}
+storyAudioFile.addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(storyAudioUrl)URL.revokeObjectURL(storyAudioUrl);storyAudioUrl=URL.createObjectURL(file);storyAudio.src=storyAudioUrl;storyAudio.load();storyStatus.textContent='Audio dimuat. Tempel transkrip lalu susun adegan.'});
+document.getElementById('buildScenesBtn').addEventListener('click',()=>{const raw=storyTranscript.value.trim();if(!raw){storyStatus.textContent='Tempel transkrip audio terlebih dahulu.';return}storyScenes=raw.split(/(?<=[.!?])\\s+|\\n+/).map(s=>s.trim()).filter(Boolean).map((text,i)=>({text,weight:Math.max(1,text.replace(/\\s/g,'').length),index:i}));sceneList.innerHTML='';storyScenes.forEach((sc,i)=>{const card=document.createElement('div');card.style.cssText='background:#110e1d;border:1px solid #39324f;border-radius:11px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start';const num=document.createElement('strong');num.textContent=String(i+1).padStart(2,'0');num.style.color='#f17bb8';const body=document.createElement('div');body.style.cssText='font-size:13px;flex:1';body.textContent=sc.text;card.append(num,body);sceneList.appendChild(card)});storyStatus.textContent=storyScenes.length+' adegan disusun. Putar audio untuk melihat subtitle mengikuti waktu audio.';if(storyScenes.length){speaking=true;motion.value='talk'}});
+document.getElementById('clearScenesBtn').addEventListener('click',()=>{storyScenes=[];sceneList.innerHTML='';speaking=false;storyStatus.textContent='Daftar adegan dihapus.'});
+storyAudio.addEventListener('play',()=>{if(storyScenes.length){speaking=true;motion.value='talk';storyStatus.textContent='Audio diputar; subtitle mengikuti perkiraan posisi audio.'}});
+storyAudio.addEventListener('pause',()=>{speaking=false});
+storyAudio.addEventListener('ended',()=>{speaking=false;storyStatus.textContent='Audio selesai diputar.'});
 charInput.addEventListener('change',e=>loadImage(e.target.files[0],img=>{character=img;sayStatus('Karakter berhasil dimuat. Sesuaikan posisi mulut di panel kanan.')}));bgInput.addEventListener('change',e=>loadImage(e.target.files[0],img=>{background=img;sayStatus('Latar belakang berhasil dimuat.')}));[mouthX,mouthY,mouthSize].forEach(el=>el.addEventListener('input',()=>{document.getElementById(el.id+'Val').textContent=el.value+'%'}));
 document.getElementById('playBtn').addEventListener('click',()=>{
  const text=dialog.value.trim();if(!text){sayStatus('Tulis dialog terlebih dahulu.');return}
