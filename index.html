@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#100d1c">
+<meta name="description" content="AnimeDramaStudio — studio animasi anime sederhana berbasis browser, tanpa AI.">
+<title>AnimeDramaStudio — Studio Anime</title>
+<style>
+:root{color-scheme:dark;--bg:#100d1c;--panel:#1b1729;--panel2:#242039;--line:#39324f;--text:#f7f3ff;--muted:#b8afce;--pink:#f17bb8;--violet:#a995ff;--mint:#91f0d0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#272044 0%,var(--bg) 52%);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:#302847;color:var(--text);font-weight:700}button.primary{background:linear-gradient(120deg,#a995ff,#e77db9);border:0;color:#170f27}button:disabled{opacity:.45;cursor:not-allowed}.app{max-width:1180px;margin:auto;padding:18px 14px 38px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:11px}.logo{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#a995ff,#f17bb8);font-size:23px;color:#1a1129}.brand h1{font-size:18px;margin:0}.brand p{font-size:12px;color:var(--muted);margin:2px 0 0}.pill{border:1px solid #4a4166;border-radius:99px;padding:6px 10px;font-size:11px;color:var(--mint);white-space:nowrap}.intro{margin:10px 0 18px}.intro h2{font-size:clamp(25px,5vw,38px);line-height:1.1;letter-spacing:-1px;margin:0 0 8px}.intro h2 span{color:var(--pink)}.intro p{color:var(--muted);max-width:650px;margin:0}.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:16px;align-items:start}.panel{background:rgba(27,23,41,.94);border:1px solid var(--line);border-radius:18px;padding:15px;min-width:0}.panel h3{font-size:15px;margin:0 0 12px}.stage{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:14px;background:linear-gradient(135deg,#352750,#171527);border:1px solid #504266}.stage canvas{display:block;width:100%;height:100%}.stage-label{position:absolute;left:10px;top:10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:#0d0b17bb;padding:5px 8px;border-radius:99px;color:#eee7ff}.stage-help{color:var(--muted);font-size:12px;margin:9px 0 13px}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}.section{border-top:1px solid var(--line);padding-top:14px;margin-top:15px}.field{display:grid;gap:7px;margin:12px 0}.field label{font-size:12px;font-weight:700;color:#d9d1ed;display:flex;justify-content:space-between;gap:8px}.field input[type=file]{width:100%;font-size:12px;color:var(--muted)}.field input[type=range]{width:100%;accent-color:var(--pink)}textarea,select,input[type=text]{width:100%;border:1px solid var(--line);border-radius:11px;background:#110e1d;color:var(--text);padding:11px;outline:none}textarea{min-height:100px;resize:vertical}select:focus,textarea:focus,input:focus{border-color:var(--violet)}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}.status{min-height:20px;color:var(--mint);font-size:12px;margin-top:10px}.hint{color:var(--muted);font-size:11px}.small-title{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:7px}.footer{font-size:11px;color:var(--muted);text-align:center;margin-top:18px}.warn{font-size:12px;background:#302641;border:1px solid #574267;padding:10px 12px;border-radius:12px;color:#e5d8f8;margin-top:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.app{padding:13px 10px 28px}.panel{padding:12px}.top{align-items:flex-start}.pill{font-size:10px}.intro{margin-top:18px}.stage{aspect-ratio:4/3}.brand h1{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="logo">✦</div><div><h1>AnimeDramaStudio</h1><p>Studio animasi anime di browser</p></div></div><div class="pill">● TANPA AI</div></header>
+<section class="intro"><h2>Hidupkan karakter<br><span>cerita versimu.</span></h2><p>Unggah karakter, tulis dialog, lalu lihat animasi dan gerakan mulut sederhana. Semua diproses langsung di browser perangkatmu.</p></section>
+<main class="layout">
+<section class="panel">
+<h3>🎬 Panggung animasi</h3>
+<div class="stage"><canvas id="stage" width="960" height="720" aria-label="Pratinjau animasi karakter"></canvas><div class="stage-label">LIVE PREVIEW</div></div>
+<p class="stage-help">Unggah gambar karakter untuk memulai. Atur posisi mulut agar mendekati wajah karakter. Gerakan ini adalah animasi 2D sederhana.</p>
+<div class="actions"><button class="primary" id="playBtn">▶ Putar dialog</button><button id="stopBtn">■ Berhenti</button><button id="snapshotBtn">⇩ Simpan gambar</button></div>
+<div id="status" class="status" role="status">Siap. Unggah gambar karakter untuk memulai.</div>
+<div class="warn">Catatan: gambar utuh tidak otomatis menjadi animasi tubuh lengkap. Untuk hasil lebih baik, gunakan gambar karakter dengan wajah jelas atau siapkan gambar bagian tubuh/pose terpisah.</div>
+</section>
+<aside class="panel">
+<h3>🧩 Karakter & adegan</h3>
+<div class="field"><label for="characterFile">Gambar karakter (PNG/JPG)</label><input id="characterFile" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<div class="field"><label for="backgroundFile">Latar belakang (opsional)</label><input id="backgroundFile" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<div class="field"><label for="motion">Gerakan karakter</label><select id="motion"><option value="float">Mengambang lembut</option><option value="talk">Berbicara</option><option value="bounce">Memantul</option><option value="still">Diam</option></select></div>
+<div class="section"><div class="small-title">Dialog & suara</div>
+<div class="field"><label for="dialog">Teks dialog</label><textarea id="dialog" placeholder="Contoh: Aku sudah menunggumu sejak tadi...">Halo! Selamat datang di AnimeDramaStudio.</textarea></div>
+<div class="twocol"><div class="field"><label for="voice">Suara</label><select id="voice"><option value="">Suara bawaan</option></select></div><div class="field"><label for="rate">Kecepatan</label><select id="rate"><option value="0.8">Pelan</option><option value="1" selected>Normal</option><option value="1.15">Cepat</option></select></div></div>
+<p class="hint">Suara menggunakan fitur text-to-speech browser/perangkat. Pilihan suara bergantung pada HP dan bahasa yang tersedia.</p></div>
+<div class="section"><div class="small-title">Penyesuaian mulut</div>
+<div class="field"><label for="mouthX">Posisi horizontal <span id="mouthXVal">50%</span></label><input id="mouthX" type="range" min="10" max="90" value="50"></div>
+<div class="field"><label for="mouthY">Posisi vertikal <span id="mouthYVal">68%</span></label><input id="mouthY" type="range" min="10" max="95" value="68"></div>
+<div class="field"><label for="mouthSize">Ukuran mulut <span id="mouthSizeVal">4%</span></label><input id="mouthSize" type="range" min="1" max="12" value="4"></div>
+<p class="hint">Pengaturan mulut adalah lapisan visual sederhana di atas gambar. Sesuaikan ketiga slider sampai berada di posisi mulut karakter.</p></div>
+</aside>
+</main>
+<div class="footer">AnimeDramaStudio • Prototipe awal • Tidak menggunakan API AI • Proyek disimpan di browser ini</div>
+</div>
+<script>
+(() => {
+const canvas=document.getElementById('stage'),ctx=canvas.getContext('2d');
+const charInput=document.getElementById('characterFile'),bgInput=document.getElementById('backgroundFile');
+const dialog=document.getElementById('dialog'),motion=document.getElementById('motion'),status=document.getElementById('status');
+const mouthX=document.getElementById('mouthX'),mouthY=document.getElementById('mouthY'),mouthSize=document.getElementById('mouthSize');
+let character=null,background=null,speaking=false,startedAt=0,raf=0,voices=[];
+const sayStatus=t=>status.textContent=t;
+function loadImage(file,cb){if(!file)return;const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{cb(img);URL.revokeObjectURL(url)};img.onerror=()=>{URL.revokeObjectURL(url);sayStatus('Gambar tidak dapat dibuka. Coba file PNG atau JPG lain.')};img.src=url}
+function drawCover(img,x,y,w,h){const ir=img.width/img.height,cr=w/h;let dw,dh;if(ir>cr){dh=h;dw=h*ir}else{dw=w;dh=w/ir}ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh)}
+function frame(now){
+ const w=canvas.width,h=canvas.height,t=now/1000;ctx.clearRect(0,0,w,h);
+ const grad=ctx.createLinearGradient(0,0,w,h);grad.addColorStop(0,'#40335f');grad.addColorStop(1,'#171525');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+ if(background){ctx.save();ctx.globalAlpha=.92;drawCover(background,0,0,w,h);ctx.restore();ctx.fillStyle='rgba(17,12,30,.18)';ctx.fillRect(0,0,w,h)}
+ else {ctx.fillStyle='rgba(255,255,255,.05)';for(let i=0;i<22;i++){let x=(i*173)%w,y=(i*97)%h;ctx.beginPath();ctx.arc(x,y,2+(i%3),0,Math.PI*2);ctx.fill()}ctx.fillStyle='#5a466f';ctx.fillRect(0,h*.79,w,h*.21);ctx.fillStyle='#8c709e';ctx.fillRect(0,h*.79,w,4)}
+ if(character){
+  let bob=0,rot=0;if(motion.value==='float'){bob=Math.sin(t*2.2)*9;rot=Math.sin(t*1.4)*.025}else if(motion.value==='talk'){bob=Math.sin(t*8)*3;rot=Math.sin(t*5)*.012}else if(motion.value==='bounce'){bob=Math.abs(Math.sin(t*3))*-25}
+  const maxW=w*.75,maxH=h*.88,scale=Math.min(maxW/character.width,maxH/character.height),cw=character.width*scale,ch=character.height*scale,cx=(w-cw)/2,cy=(h-ch)/2+bob;
+  ctx.save();ctx.translate(w/2,h/2+bob);ctx.rotate(rot);ctx.shadowColor='rgba(0,0,0,.3)';ctx.shadowBlur=22;ctx.shadowOffsetY=10;ctx.drawImage(character,-cw/2,-ch/2,cw,ch);ctx.restore();
+  // Overlay mouth: intentionally simple, adjustable because one flat image has no editable facial rig.
+  const mx=w*(Number(mouthX.value)/100),my=h*(Number(mouthY.value)/100)+bob,mw=w*(Number(mouthSize.value)/100),mh=Math.max(7,mw*.48);
+  const open=speaking && (Math.sin(now/70)>-.12);
+  ctx.save();ctx.translate(mx,my);ctx.fillStyle='#3a1027';ctx.strokeStyle='rgba(255,220,236,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,open?mw*.52:mw*.5,open?mh:Math.max(2,mh*.17),0,0,Math.PI*2);ctx.fill();if(open){ctx.fillStyle='#e78aa8';ctx.beginPath();ctx.ellipse(0,mh*.48,mw*.22,mh*.22,0,0,Math.PI*2);ctx.fill()}ctx.stroke();ctx.restore();
+ }else{
+  ctx.textAlign='center';ctx.fillStyle='#e8dfff';ctx.font='bold 32px system-ui';ctx.fillText('Unggah karakter anime',w/2,h*.43);ctx.fillStyle='#b8afce';ctx.font='20px system-ui';ctx.fillText('PNG • JPG • WEBP',w/2,h*.49);
+  ctx.font='70px system-ui';ctx.fillText('✦',w/2,h*.62)
+ }
+ raf=requestAnimationFrame(frame)
+}
+function populateVoices(){if(!('speechSynthesis'in window))return;voices=speechSynthesis.getVoices();const sel=document.getElementById('voice');const old=sel.value;sel.innerHTML='<option value="">Suara bawaan</option>';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});if(old)sel.value=old}
+charInput.addEventListener('change',e=>loadImage(e.target.files[0],img=>{character=img;sayStatus('Karakter berhasil dimuat. Sesuaikan posisi mulut di panel kanan.')}));bgInput.addEventListener('change',e=>loadImage(e.target.files[0],img=>{background=img;sayStatus('Latar belakang berhasil dimuat.')}));[mouthX,mouthY,mouthSize].forEach(el=>el.addEventListener('input',()=>{document.getElementById(el.id+'Val').textContent=el.value+'%'}));
+document.getElementById('playBtn').addEventListener('click',()=>{
+ const text=dialog.value.trim();if(!text){sayStatus('Tulis dialog terlebih dahulu.');return}
+ if(!('speechSynthesis'in window)){sayStatus('Browser ini belum mendukung suara otomatis. Coba Chrome terbaru.');return}
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const idx=document.getElementById('voice').value;if(idx!==''&&voices[Number(idx)])u.voice=voices[Number(idx)];u.lang=u.voice?.lang||'id-ID';u.rate=Number(document.getElementById('rate').value);u.onstart=()=>{speaking=true;motion.value='talk';sayStatus('Karakter sedang mengucapkan dialog…')};u.onend=()=>{speaking=false;sayStatus('Dialog selesai.')};u.onerror=()=>{speaking=false;sayStatus('Suara tidak dapat diputar di browser ini.')};speaking=true;speechSynthesis.speak(u)
+});
+document.getElementById('stopBtn').addEventListener('click',()=>{if('speechSynthesis'in window)speechSynthesis.cancel();speaking=false;sayStatus('Pemutaran dihentikan.')});
+document.getElementById('snapshotBtn').addEventListener('click',()=>{try{const a=document.createElement('a');a.download='anime-drama-scene.png';a.href=canvas.toDataURL('image/png');a.click();sayStatus('Gambar panggung disimpan.')}catch(e){sayStatus('Tidak dapat menyimpan gambar panggung saat ini.')}});
+if('speechSynthesis'in window){populateVoices();speechSynthesis.onvoiceschanged=populateVoices}
+try{const saved=JSON.parse(localStorage.getItem('animeDramaStudioSettings')||'{}');if(saved.dialog)dialog.value=saved.dialog;if(saved.mouthX)mouthX.value=saved.mouthX;if(saved.mouthY)mouthY.value=saved.mouthY;if(saved.mouthSize)mouthSize.value=saved.mouthSize;if(saved.motion)motion.value=saved.motion}catch(e){}
+setInterval(()=>{try{localStorage.setItem('animeDramaStudioSettings',JSON.stringify({dialog:dialog.value,mouthX:mouthX.value,mouthY:mouthY.value,mouthSize:mouthSize.value,motion:motion.value}))}catch(e){}},2000);
+cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
