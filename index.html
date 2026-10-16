@@ -100,9 +100,26 @@ storyAudio.addEventListener('pause',()=>{speaking=false});
 storyAudio.addEventListener('ended',()=>{speaking=false;storyStatus.textContent='Audio selesai diputar.'});
 charInput.addEventListener('change',e=>loadImage(e.target.files[0],img=>{character=img;sayStatus('Karakter berhasil dimuat. Sesuaikan posisi mulut di panel kanan.')}));bgInput.addEventListener('change',e=>loadImage(e.target.files[0],img=>{background=img;sayStatus('Latar belakang berhasil dimuat.')}));[mouthX,mouthY,mouthSize].forEach(el=>el.addEventListener('input',()=>{document.getElementById(el.id+'Val').textContent=el.value+'%'}));
 document.getElementById('playBtn').addEventListener('click',()=>{
- const text=dialog.value.trim();if(!text){sayStatus('Tulis dialog terlebih dahulu.');return}
- if(!('speechSynthesis'in window)){sayStatus('Browser ini belum mendukung suara otomatis. Coba Chrome terbaru.');return}
- speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const idx=document.getElementById('voice').value;if(idx!==''&&voices[Number(idx)])u.voice=voices[Number(idx)];u.lang=u.voice?.lang||'id-ID';u.rate=Number(document.getElementById('rate').value);u.onstart=()=>{speaking=true;motion.value='talk';sayStatus('Karakter sedang mengucapkan dialog…')};u.onend=()=>{speaking=false;sayStatus('Dialog selesai.')};u.onerror=()=>{speaking=false;sayStatus('Suara tidak dapat diputar di browser ini.')};speaking=true;speechSynthesis.speak(u)
+ const text=dialog.value.trim();
+ if(!text){sayStatus('Tulis dialog terlebih dahulu.');return}
+ if(!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)){sayStatus('Fitur suara tidak tersedia di browser ini. Buka situs dengan Google Chrome.');return}
+ try {
+  sayStatus('Menyiapkan suara…');
+  const synth=window.speechSynthesis;
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  const idx=document.getElementById('voice').value;
+  const available=synth.getVoices();
+  if(idx!=='' && available[Number(idx)]) u.voice=available[Number(idx)];
+  u.lang=(u.voice && u.voice.lang) || 'id-ID';
+  u.rate=Number(document.getElementById('rate').value) || 1;
+  u.onstart=()=>{speaking=true;motion.value='talk';sayStatus('🔊 Dialog sedang diputar…');};
+  u.onend=()=>{speaking=false;sayStatus('Dialog selesai. Tekan Putar dialog untuk mendengarkan lagi.');};
+  u.onerror=(event)=>{speaking=false;sayStatus('Suara gagal diputar ('+(event.error||'kesalahan browser')+'). Coba buka di Google Chrome dan periksa volume.');};
+  speaking=true;
+  synth.speak(u);
+  if(synth.paused) synth.resume();
+ } catch(err) { speaking=false; sayStatus('Gagal memulai suara: '+(err.message||err)); }
 });
 document.getElementById('stopBtn').addEventListener('click',()=>{if('speechSynthesis'in window)speechSynthesis.cancel();speaking=false;sayStatus('Pemutaran dihentikan.')});
 document.getElementById('snapshotBtn').addEventListener('click',()=>{try{const a=document.createElement('a');a.download='anime-drama-scene.png';a.href=canvas.toDataURL('image/png');a.click();sayStatus('Gambar panggung disimpan.')}catch(e){sayStatus('Tidak dapat menyimpan gambar panggung saat ini.')}});
